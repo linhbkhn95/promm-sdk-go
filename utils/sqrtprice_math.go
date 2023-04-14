@@ -14,16 +14,16 @@ var (
 	ErrLiquidityLessThanZero = errors.New("liquidity less than zero")
 	ErrInvariant             = errors.New("invariant violation")
 )
-var MaxUint160 = new(big.Int).Sub(new(big.Int).Exp(big.NewInt(2), big.NewInt(160), nil), constants.One)
+var MaxUint160 = new(big.Int).Sub(new(big.Int).Exp(constants.Two, big.NewInt(160), nil), constants.One)
 
 func multiplyIn256(x, y *big.Int) *big.Int {
 	product := new(big.Int).Mul(x, y)
-	return new(big.Int).And(product, entities.MaxUint256)
+	return product.And(product, entities.MaxUint256)
 }
 
 func addIn256(x, y *big.Int) *big.Int {
 	sum := new(big.Int).Add(x, y)
-	return new(big.Int).And(sum, entities.MaxUint256)
+	return sum.And(sum, entities.MaxUint256)
 }
 
 func GetAmount0Delta(sqrtRatioAX96, sqrtRatioBX96, liquidity *big.Int, roundUp bool) *big.Int {
@@ -37,7 +37,8 @@ func GetAmount0Delta(sqrtRatioAX96, sqrtRatioBX96, liquidity *big.Int, roundUp b
 	if roundUp {
 		return MulDivRoundingUp(MulDivRoundingUp(numerator1, numerator2, sqrtRatioBX96), constants.One, sqrtRatioAX96)
 	}
-	return new(big.Int).Div(new(big.Int).Div(new(big.Int).Mul(numerator1, numerator2), sqrtRatioBX96), sqrtRatioAX96)
+	numerator1.Mul(numerator1, numerator2)
+	return numerator1.Div(numerator1.Div(numerator1, sqrtRatioBX96), sqrtRatioAX96)
 }
 
 func GetAmount1Delta(sqrtRatioAX96, sqrtRatioBX96, liquidity *big.Int, roundUp bool) *big.Int {
@@ -48,7 +49,8 @@ func GetAmount1Delta(sqrtRatioAX96, sqrtRatioBX96, liquidity *big.Int, roundUp b
 	if roundUp {
 		return MulDivRoundingUp(liquidity, new(big.Int).Sub(sqrtRatioBX96, sqrtRatioAX96), constants.Q96)
 	}
-	return new(big.Int).Div(new(big.Int).Mul(liquidity, new(big.Int).Sub(sqrtRatioBX96, sqrtRatioAX96)), constants.Q96)
+	temp := new(big.Int).Sub(sqrtRatioBX96, sqrtRatioAX96)
+	return temp.Div(temp.Mul(liquidity, temp), constants.Q96)
 }
 
 func GetNextSqrtPriceFromInput(sqrtPX96, liquidity, amountIn *big.Int, zeroForOne bool) (*big.Int, error) {
@@ -100,7 +102,7 @@ func getNextSqrtPriceFromAmount0RoundingUp(sqrtPX96, liquidity, amount *big.Int,
 		if numerator1.Cmp(product) <= 0 {
 			return nil, ErrInvariant
 		}
-		denominator := new(big.Int).Sub(numerator1, product)
+		denominator := product.Sub(numerator1, product)
 		return MulDivRoundingUp(numerator1, sqrtPX96, denominator), nil
 	}
 }
