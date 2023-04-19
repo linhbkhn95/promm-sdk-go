@@ -8,11 +8,11 @@ import (
 
 func MulDivRoundingUp(a, b, denominator *big.Int) *big.Int {
 	product := new(big.Int).Mul(a, b)
-	result := new(big.Int).Div(product, denominator)
 	if new(big.Int).Rem(product, denominator).Cmp(constants.Zero) != 0 {
-		result.Add(result, constants.One)
+		return product.Div(product, denominator).Add(product, constants.One)
+	} else {
+		return product.Div(product, denominator)
 	}
-	return result
 }
 
 func MulDivRoundingDown(a, b, denominator *big.Int) *big.Int {

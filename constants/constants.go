@@ -57,5 +57,8 @@ var (
 	Q96  = new(big.Int).Exp(big.NewInt(2), big.NewInt(96), nil)
 	Q192 = new(big.Int).Exp(Q96, big.NewInt(2), nil)
 
-	PercentZero = entities.NewFraction(big.NewInt(0), big.NewInt(1))
+	PercentZero      = entities.NewFraction(big.NewInt(0), big.NewInt(1))
+	FeeUnits         = new(big.Int).Exp(big.NewInt(10), big.NewInt(5), nil)
+	TwoFeeUnits      = new(big.Int).Mul(FeeUnits, big.NewInt(2))
+	TwoFeeUnitsLsh96 = new(big.Int).Lsh(TwoFeeUnits, 96)
 )
