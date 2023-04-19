@@ -3,9 +3,9 @@ package entities
 import (
 	"errors"
 	"math"
-	"math/big"
 
 	"github.com/KyberNetwork/promm-sdk-go/constants"
+	"github.com/linhbkhn95/int256"
 )
 
 const (
@@ -41,7 +41,7 @@ func ValidateList(ticks []Tick, tickSpacing int) error {
 	}
 
 	// ensure tick liquidity deltas sum to 0
-	sum := big.NewInt(0)
+	sum := int256.NewInt(0)
 	for _, tick := range ticks {
 		sum.Add(sum, tick.LiquidityNet)
 	}

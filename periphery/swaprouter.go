@@ -10,6 +10,7 @@ import (
 	"github.com/KyberNetwork/promm-sdk-go/utils"
 	core "github.com/daoleno/uniswap-sdk-core/entities"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/linhbkhn95/int256"
 )
 
 //go:embed contracts/SwapRouter.sol/SwapRouter.json
@@ -28,14 +29,14 @@ type SwapOptions struct {
 	Recipient         common.Address // The account that should receive the output.
 	Deadline          *big.Int       // When the transaction expires, in epoch seconds.
 	InputTokenPermit  *PermitOptions // The optional permit parameters for spending the input.
-	SqrtPriceLimitX96 *big.Int       // The optional price limit for the trade.
+	SqrtPriceLimitX96 *int256.Int    // The optional price limit for the trade.
 	Fee               *FeeOptions    // Optional information for taking a fee on output.
 }
 
 type ExactInputSingleParams struct {
 	TokenIn           common.Address
 	TokenOut          common.Address
-	Fee               *big.Int
+	Fee               *int256.Int
 	Recipient         common.Address
 	Deadline          *big.Int
 	AmountIn          *big.Int
@@ -46,7 +47,7 @@ type ExactInputSingleParams struct {
 type ExactOutputSingleParams struct {
 	TokenIn           common.Address
 	TokenOut          common.Address
-	Fee               *big.Int
+	Fee               *int256.Int
 	Recipient         common.Address
 	Deadline          *big.Int
 	AmountOut         *big.Int
@@ -143,7 +144,7 @@ func SwapCallParameters(trades []*entities.Trade, options *SwapOptions) (*utils.
 		recipient = constants.AddressZero
 	}
 
-	sqrtPriceLimitX96 := big.NewInt(0)
+	sqrtPriceLimitX96 := int256.NewInt(0)
 	if options != nil && options.SqrtPriceLimitX96 != nil {
 		sqrtPriceLimitX96 = options.SqrtPriceLimitX96
 	}
@@ -168,12 +169,12 @@ func SwapCallParameters(trades []*entities.Trade, options *SwapOptions) (*utils.
 					exactInputSingleParams := &ExactInputSingleParams{
 						TokenIn:           swap.Route.TokenPath[0].Address,
 						TokenOut:          swap.Route.TokenPath[1].Address,
-						Fee:               big.NewInt(int64(swap.Route.Pools[0].Fee)),
+						Fee:               int256.NewInt(int64(swap.Route.Pools[0].Fee)),
 						Recipient:         recipient,
 						Deadline:          options.Deadline,
 						AmountIn:          amountIn.Quotient(),
 						AmountOutMinimum:  amountOut.Quotient(),
-						SqrtPriceLimitX96: sqrtPriceLimitX96,
+						SqrtPriceLimitX96: sqrtPriceLimitX96.ToBig(),
 					}
 					calldata, err := abi.Pack("exactInputSingle", exactInputSingleParams)
 					if err != nil {
@@ -184,12 +185,12 @@ func SwapCallParameters(trades []*entities.Trade, options *SwapOptions) (*utils.
 					exactOutputSingleParams := &ExactOutputSingleParams{
 						TokenIn:           swap.Route.TokenPath[0].Address,
 						TokenOut:          swap.Route.TokenPath[1].Address,
-						Fee:               big.NewInt(int64(swap.Route.Pools[0].Fee)),
+						Fee:               int256.NewInt(int64(swap.Route.Pools[0].Fee)),
 						Recipient:         recipient,
 						Deadline:          options.Deadline,
 						AmountOut:         amountOut.Quotient(),
 						AmountInMaximum:   amountIn.Quotient(),
-						SqrtPriceLimitX96: sqrtPriceLimitX96,
+						SqrtPriceLimitX96: sqrtPriceLimitX96.ToBig(),
 					}
 					calldata, err := abi.Pack("exactOutputSingle", exactOutputSingleParams)
 					if err != nil {

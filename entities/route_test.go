@@ -1,11 +1,11 @@
 package entities
 
 import (
-	"math/big"
 	"testing"
 
 	"github.com/daoleno/uniswap-sdk-core/entities"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/linhbkhn95/int256"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/KyberNetwork/promm-sdk-go/constants"
@@ -19,9 +19,9 @@ var (
 	rtoken2 = entities.NewToken(1, common.HexToAddress("0x0000000000000000000000000000000000000003"), 18, "t2", "token2")
 	rweth   = entities.WETH9[1]
 
-	rpool_0_1, _    = NewPool(rtoken0, rtoken1, constants.Fee004, utils.EncodeSqrtRatioX96(constants.One, constants.One), big.NewInt(0), big.NewInt(0), 0, nil)
-	rpool_0_weth, _ = NewPool(rtoken0, rweth, constants.Fee004, utils.EncodeSqrtRatioX96(constants.One, constants.One), big.NewInt(0), big.NewInt(0), 0, nil)
-	rpool_1_weth, _ = NewPool(rtoken1, rweth, constants.Fee004, utils.EncodeSqrtRatioX96(constants.One, constants.One), big.NewInt(0), big.NewInt(0), 0, nil)
+	rpool_0_1, _    = NewPool(rtoken0, rtoken1, constants.Fee004, utils.EncodeSqrtRatioX96(constants.One, constants.One), int256.NewInt(0), int256.NewInt(0), 0, nil)
+	rpool_0_weth, _ = NewPool(rtoken0, rweth, constants.Fee004, utils.EncodeSqrtRatioX96(constants.One, constants.One), int256.NewInt(0), int256.NewInt(0), 0, nil)
+	rpool_1_weth, _ = NewPool(rtoken1, rweth, constants.Fee004, utils.EncodeSqrtRatioX96(constants.One, constants.One), int256.NewInt(0), int256.NewInt(0), 0, nil)
 )
 
 func TestPath(t *testing.T) {
@@ -80,17 +80,17 @@ func TestEtherOutput(t *testing.T) {
 }
 
 func TestMidPrice(t *testing.T) {
-	r, _ := utils.GetTickAtSqrtRatio(utils.EncodeSqrtRatioX96(big.NewInt(1), big.NewInt(5)))
-	pool_0_1, _ := NewPool(rtoken0, rtoken1, constants.Fee004, utils.EncodeSqrtRatioX96(big.NewInt(1), big.NewInt(5)), big.NewInt(0), big.NewInt(0), r, nil)
+	r, _ := utils.GetTickAtSqrtRatio(utils.EncodeSqrtRatioX96(int256.NewInt(1), int256.NewInt(5)))
+	pool_0_1, _ := NewPool(rtoken0, rtoken1, constants.Fee004, utils.EncodeSqrtRatioX96(int256.NewInt(1), int256.NewInt(5)), int256.NewInt(0), int256.NewInt(0), r, nil)
 
-	r, _ = utils.GetTickAtSqrtRatio(utils.EncodeSqrtRatioX96(big.NewInt(15), big.NewInt(30)))
-	pool_1_2, _ := NewPool(rtoken1, rtoken2, constants.Fee004, utils.EncodeSqrtRatioX96(big.NewInt(15), big.NewInt(30)), big.NewInt(0), big.NewInt(0), r, nil)
+	r, _ = utils.GetTickAtSqrtRatio(utils.EncodeSqrtRatioX96(int256.NewInt(15), int256.NewInt(30)))
+	pool_1_2, _ := NewPool(rtoken1, rtoken2, constants.Fee004, utils.EncodeSqrtRatioX96(int256.NewInt(15), int256.NewInt(30)), int256.NewInt(0), int256.NewInt(0), r, nil)
 
-	r, _ = utils.GetTickAtSqrtRatio(utils.EncodeSqrtRatioX96(big.NewInt(3), big.NewInt(1)))
-	pool_0_weth, _ := NewPool(rtoken0, rweth, constants.Fee004, utils.EncodeSqrtRatioX96(big.NewInt(3), big.NewInt(1)), big.NewInt(0), big.NewInt(0), r, nil)
+	r, _ = utils.GetTickAtSqrtRatio(utils.EncodeSqrtRatioX96(int256.NewInt(3), int256.NewInt(1)))
+	pool_0_weth, _ := NewPool(rtoken0, rweth, constants.Fee004, utils.EncodeSqrtRatioX96(int256.NewInt(3), int256.NewInt(1)), int256.NewInt(0), int256.NewInt(0), r, nil)
 
-	r, _ = utils.GetTickAtSqrtRatio(utils.EncodeSqrtRatioX96(big.NewInt(1), big.NewInt(7)))
-	pool_1_weth, _ := NewPool(rtoken1, rweth, constants.Fee004, utils.EncodeSqrtRatioX96(big.NewInt(1), big.NewInt(7)), big.NewInt(0), big.NewInt(0), r, nil)
+	r, _ = utils.GetTickAtSqrtRatio(utils.EncodeSqrtRatioX96(int256.NewInt(1), int256.NewInt(7)))
+	pool_1_weth, _ := NewPool(rtoken1, rweth, constants.Fee004, utils.EncodeSqrtRatioX96(int256.NewInt(1), int256.NewInt(7)), int256.NewInt(0), int256.NewInt(0), r, nil)
 
 	// correct for 0 -> 1
 	route, _ := NewRoute([]*Pool{pool_0_1}, rtoken0, rtoken1)

@@ -1,15 +1,14 @@
 package utils
 
 import (
-	"math/big"
-
 	"github.com/KyberNetwork/promm-sdk-go/constants"
+	"github.com/linhbkhn95/int256"
 )
 
-func AddDelta(x, y *big.Int) *big.Int {
+func AddDelta(x, y *int256.Int) *int256.Int {
 	if y.Cmp(constants.Zero) < 0 {
-		return new(big.Int).Sub(x, new(big.Int).Mul(y, constants.NegativeOne))
+		return int256.New().Sub(x, int256.New().Mul(y, constants.NegativeOne))
 	} else {
-		return new(big.Int).Add(x, y)
+		return int256.New().Add(x, y)
 	}
 }

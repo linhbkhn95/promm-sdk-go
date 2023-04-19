@@ -9,6 +9,7 @@ import (
 	core "github.com/daoleno/uniswap-sdk-core/entities"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/linhbkhn95/int256"
 
 	"github.com/KyberNetwork/promm-sdk-go/constants"
 	"github.com/KyberNetwork/promm-sdk-go/entities"
@@ -33,7 +34,7 @@ func getNonFungiblePositionManagerABI() abi.ABI {
 	return wabi.ABI
 }
 
-var MaxUint128 = new(big.Int).Sub(new(big.Int).Exp(big.NewInt(2), big.NewInt(128), nil), big.NewInt(1))
+var MaxUint128 = int256.New().Sub(int256.New().Exp(int256.NewInt(2), int256.NewInt(128), nil), int256.NewInt(1))
 
 type MintSpecificOptions struct {
 	Recipient  common.Address // The account that should receive the minted NFT
@@ -41,13 +42,13 @@ type MintSpecificOptions struct {
 }
 
 type IncreaseSpecificOptions struct {
-	TokenID *big.Int // Indicates the ID of the position to increase liquidity for
+	TokenID *int256.Int // Indicates the ID of the position to increase liquidity for
 }
 
 // Options for producing the calldata to add liquidity
 type CommonAddLiquidityOptions struct {
 	SlippageTolerance *core.Percent  // How much the pool price is allowed to move
-	Deadline          *big.Int       // When the transaction expires, in epoch seconds
+	Deadline          *int256.Int    // When the transaction expires, in epoch seconds
 	UseNative         *core.Ether    // Whether to spend ether. If true, one of the pool tokens must be WETH, by default false
 	Token0Permit      *PermitOptions // The optional permit parameters for spending token0
 	Token1Permit      *PermitOptions // The optional permit parameters for spending token1
@@ -72,12 +73,12 @@ type AddLiquidityOptions struct {
 type SafeTransferOptions struct {
 	Sender    common.Address // The account sending the NFT
 	Recipient common.Address // The account that should receive the NFT
-	TokenID   *big.Int       //  The id of the token being sent
+	TokenID   *int256.Int    //  The id of the token being sent
 	Data      []byte         // The optional parameter that passes data to the `onERC721Received` call for the staker
 }
 
 type CollectOptions struct {
-	TokenID               *big.Int             // Indicates the ID of the position to collect for
+	TokenID               *int256.Int          // Indicates the ID of the position to collect for
 	ExpectedCurrencyOwed0 *core.CurrencyAmount // Expected value of tokensOwed0, including as-of-yet-unaccounted-for fees/liquidity value to be burned
 	ExpectedCurrencyOwed1 *core.CurrencyAmount // Expected value of tokensOwed1, including as-of-yet-unaccounted-for fees/liquidity value to be burned
 	ExpectedTokenOwed0    core.Currency
@@ -89,16 +90,16 @@ type NFTPermitOptions struct {
 	V        uint
 	R        string
 	S        string
-	Deadline *big.Int
+	Deadline *int256.Int
 	Spender  string
 }
 
 // Options for producing the calldata to exit a position
 type RemoveLiquidityOptions struct {
-	TokenID             *big.Int          // The ID of the token to exit
+	TokenID             *int256.Int       // The ID of the token to exit
 	LiquidityPercentage *core.Percent     // The percentage of position liquidity to exit
 	SlippageTolerance   *core.Percent     // How much the pool price is allowed to move
-	Deadline            *big.Int          // When the transaction expires, in epoch seconds.
+	Deadline            *int256.Int       // When the transaction expires, in epoch seconds.
 	BurnToken           bool              // Whether the NFT should be burned if the entire position is being exited, by default false
 	Permit              *NFTPermitOptions // The optional permit of the token ID being exited, in case the exit transaction is being sent by an account that does not own the NFT
 	CollectOptions      *CollectOptions   // Parameters to be passed on to collect
@@ -107,44 +108,44 @@ type RemoveLiquidityOptions struct {
 type MintParams struct {
 	Token0         common.Address
 	Token1         common.Address
-	Fee            *big.Int
-	TickLower      *big.Int
-	TickUpper      *big.Int
-	Amount0Desired *big.Int
-	Amount1Desired *big.Int
-	Amount0Min     *big.Int
-	Amount1Min     *big.Int
+	Fee            *int256.Int
+	TickLower      *int256.Int
+	TickUpper      *int256.Int
+	Amount0Desired *int256.Int
+	Amount1Desired *int256.Int
+	Amount0Min     *int256.Int
+	Amount1Min     *int256.Int
 	Recipient      common.Address
-	Deadline       *big.Int
+	Deadline       *int256.Int
 }
 
 type IncreaseLiquidityParams struct {
-	TokenId        *big.Int
-	Amount0Desired *big.Int
-	Amount1Desired *big.Int
-	Amount0Min     *big.Int
-	Amount1Min     *big.Int
-	Deadline       *big.Int
+	TokenId        *int256.Int
+	Amount0Desired *int256.Int
+	Amount1Desired *int256.Int
+	Amount0Min     *int256.Int
+	Amount1Min     *int256.Int
+	Deadline       *int256.Int
 }
 
 type CollectParams struct {
-	TokenId    *big.Int
+	TokenId    *int256.Int
 	Recipient  common.Address
-	Amount0Max *big.Int
-	Amount1Max *big.Int
+	Amount0Max *int256.Int
+	Amount1Max *int256.Int
 }
 
 type DecreaseLiquidityParams struct {
-	TokenId    *big.Int
-	Liquidity  *big.Int
-	Amount0Min *big.Int
-	Amount1Min *big.Int
-	Deadline   *big.Int
+	TokenId    *int256.Int
+	Liquidity  *int256.Int
+	Amount0Min *int256.Int
+	Amount1Min *int256.Int
+	Deadline   *int256.Int
 }
 
 func encodeCreate(pool *entities.Pool) ([]byte, error) {
 	abi := getNonFungiblePositionManagerABI()
-	return abi.Pack("createAndInitializePoolIfNecessary", pool.Token0.Address, pool.Token1.Address, big.NewInt(int64(pool.Fee)), pool.SqrtRatioX96)
+	return abi.Pack("createAndInitializePoolIfNecessary", pool.Token0.Address, pool.Token1.Address, int256.NewInt(int64(pool.Fee)), pool.SqrtRatioX96)
 }
 
 func CreateCallParameters(pool *entities.Pool) (*utils.MethodParameters, error) {
@@ -154,7 +155,7 @@ func CreateCallParameters(pool *entities.Pool) (*utils.MethodParameters, error) 
 	}
 	return &utils.MethodParameters{
 		Calldata: calldata,
-		Value:    constants.Zero,
+		Value:    constants.ZeroBigInt,
 	}, nil
 }
 
@@ -209,9 +210,9 @@ func AddCallParameters(position *entities.Position, opts *AddLiquidityOptions) (
 		calldata, err := abi.Pack("mint", &MintParams{
 			Token0:         position.Pool.Token0.Address,
 			Token1:         position.Pool.Token1.Address,
-			Fee:            big.NewInt(int64(position.Pool.Fee)),
-			TickLower:      big.NewInt(int64(position.TickLower)),
-			TickUpper:      big.NewInt(int64(position.TickUpper)),
+			Fee:            int256.NewInt(int64(position.Pool.Fee)),
+			TickLower:      int256.NewInt(int64(position.TickLower)),
+			TickUpper:      int256.NewInt(int64(position.TickUpper)),
 			Amount0Desired: amount0Desired,
 			Amount1Desired: amount1Desired,
 			Amount0Min:     amount0Min,
@@ -267,7 +268,7 @@ func AddCallParameters(position *entities.Position, opts *AddLiquidityOptions) (
 
 	return &utils.MethodParameters{
 		Calldata: datas,
-		Value:    value,
+		Value:    value.ToBig(),
 	}, nil
 }
 
@@ -335,7 +336,7 @@ func CollectCallParameters(opts *CollectOptions) (*utils.MethodParameters, error
 	}
 	return &utils.MethodParameters{
 		Calldata: data,
-		Value:    constants.Zero,
+		Value:    constants.ZeroBigInt,
 	}, nil
 }
 
@@ -351,7 +352,7 @@ func RemoveCallParameters(position *entities.Position, opts *RemoveLiquidityOpti
 	// construct a partial position with a percentage of liquidity
 	partialPosition, err := entities.NewPosition(
 		position.Pool,
-		opts.LiquidityPercentage.Multiply(core.NewPercent(position.Liquidity, big.NewInt(1))).Quotient(),
+		int256.MustFromBig(opts.LiquidityPercentage.Multiply(core.NewPercent(position.Liquidity.ToBig(), big.NewInt(1))).Quotient()),
 		position.TickLower,
 		position.TickUpper,
 	)
@@ -393,8 +394,8 @@ func RemoveCallParameters(position *entities.Position, opts *RemoveLiquidityOpti
 	collectOpts := &CollectOptions{
 		TokenID: opts.TokenID,
 		// add the underlying value to the expected currency already owed
-		ExpectedCurrencyOwed0: opts.CollectOptions.ExpectedCurrencyOwed0.Add(core.FromRawAmount(opts.CollectOptions.ExpectedCurrencyOwed0.Currency, amount0Min)),
-		ExpectedCurrencyOwed1: opts.CollectOptions.ExpectedCurrencyOwed1.Add(core.FromRawAmount(opts.CollectOptions.ExpectedCurrencyOwed1.Currency, amount1Min)),
+		ExpectedCurrencyOwed0: opts.CollectOptions.ExpectedCurrencyOwed0.Add(core.FromRawAmount(opts.CollectOptions.ExpectedCurrencyOwed0.Currency, amount0Min.ToBig())),
+		ExpectedCurrencyOwed1: opts.CollectOptions.ExpectedCurrencyOwed1.Add(core.FromRawAmount(opts.CollectOptions.ExpectedCurrencyOwed1.Currency, amount1Min.ToBig())),
 		ExpectedTokenOwed0:    opts.CollectOptions.ExpectedTokenOwed0,
 		ExpectedTokenOwed1:    opts.CollectOptions.ExpectedTokenOwed1,
 		Recipient:             opts.CollectOptions.Recipient,
@@ -405,7 +406,7 @@ func RemoveCallParameters(position *entities.Position, opts *RemoveLiquidityOpti
 	}
 	calldatas = append(calldatas, collectdata...)
 
-	if opts.LiquidityPercentage.EqualTo(core.NewFraction(constants.One, big.NewInt(1))) {
+	if opts.LiquidityPercentage.EqualTo(core.NewFraction(constants.OneBigInt, big.NewInt(1))) {
 		if opts.BurnToken {
 			calldata, err := abi.Pack("burn", opts.TokenID)
 			if err != nil {
@@ -425,7 +426,7 @@ func RemoveCallParameters(position *entities.Position, opts *RemoveLiquidityOpti
 	}
 	return &utils.MethodParameters{
 		Calldata: data,
-		Value:    constants.Zero,
+		Value:    constants.ZeroBigInt,
 	}, nil
 }
 
@@ -449,6 +450,6 @@ func SafeTransferFromParameters(opts *SafeTransferOptions) (*utils.MethodParamet
 	}
 	return &utils.MethodParameters{
 		Calldata: calldata,
-		Value:    constants.Zero,
+		Value:    constants.ZeroBigInt,
 	}, nil
 }

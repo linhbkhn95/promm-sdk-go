@@ -6,6 +6,7 @@ import (
 
 	"github.com/daoleno/uniswap-sdk-core/entities"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/linhbkhn95/int256"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/KyberNetwork/promm-sdk-go/constants"
@@ -78,18 +79,18 @@ var (
 )
 
 func v2StylePool(token0, token1 *entities.Token, reserve0, reserve1 *entities.CurrencyAmount, feeAmount constants.FeeAmount) *Pool {
-	sqrtRatioX96 := utils.EncodeSqrtRatioX96(reserve1.Quotient(), reserve0.Quotient())
+	sqrtRatioX96 := utils.EncodeSqrtRatioX96(int256.MustFromBig(reserve1.Quotient()), int256.MustFromBig(reserve0.Quotient()))
 	liquidity := new(big.Int).Sqrt(new(big.Int).Mul(reserve0.Quotient(), reserve1.Quotient()))
 	ticks := []Tick{
 		{
 			Index:          NearestUsableTick(utils.MinTick, constants.TickSpacings[feeAmount]),
-			LiquidityNet:   liquidity,
-			LiquidityGross: liquidity,
+			LiquidityNet:   int256.MustFromBig(liquidity),
+			LiquidityGross: int256.MustFromBig(liquidity),
 		},
 		{
 			Index:          NearestUsableTick(utils.MaxTick, constants.TickSpacings[feeAmount]),
-			LiquidityNet:   new(big.Int).Mul(liquidity, big.NewInt(-1)),
-			LiquidityGross: liquidity,
+			LiquidityNet:   int256.New().Mul(int256.MustFromBig(liquidity), int256.NewInt(-1)),
+			LiquidityGross: int256.MustFromBig(liquidity),
 		},
 	}
 	s, err := utils.GetTickAtSqrtRatio(sqrtRatioX96)
@@ -100,10 +101,11 @@ func v2StylePool(token0, token1 *entities.Token, reserve0, reserve1 *entities.Cu
 	if err != nil {
 		panic(err)
 	}
-	pool, err := NewPool(token0, token1, feeAmount, sqrtRatioX96, liquidity, big.NewInt(0), s, p)
+	pool, err := NewPool(token0, token1, feeAmount, sqrtRatioX96, int256.MustFromBig(liquidity), int256.NewInt(0), s, p)
 	if err != nil {
 		panic(err)
 	}
+
 	return pool
 }
 

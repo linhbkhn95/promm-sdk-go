@@ -4,10 +4,10 @@ import (
 	_ "embed"
 	"encoding/json"
 	"errors"
-	"math/big"
 
 	"github.com/daoleno/uniswap-sdk-core/entities"
 	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/linhbkhn95/int256"
 )
 
 //go:embed contracts/interfaces/ISelfPermit.sol/ISelfPermit.json
@@ -21,16 +21,16 @@ type StandardPermitArguments struct {
 	V        uint8
 	R        [32]byte
 	S        [32]byte
-	Amount   *big.Int
-	Deadline *big.Int
+	Amount   *int256.Int
+	Deadline *int256.Int
 }
 
 type AllowedPermitArguments struct {
 	V      uint8
 	R      [32]byte
 	S      [32]byte
-	Nonce  *big.Int
-	Expiry *big.Int
+	Nonce  *int256.Int
+	Expiry *int256.Int
 }
 
 type PermitOptions struct {

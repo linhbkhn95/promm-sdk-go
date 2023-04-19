@@ -9,6 +9,7 @@ import (
 	core "github.com/daoleno/uniswap-sdk-core/entities"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/linhbkhn95/int256"
 )
 
 const INCENTIVE_KEY_ABI = "tuple(address rewardToken, address pool, uint256 startTime, uint256 endTime, address refundee)"
@@ -25,24 +26,24 @@ type FullWithdrawOptions struct {
 type IncentiveKey struct {
 	RewardToken *core.Token    // The token rewarded for participating in the staking program.
 	Pool        *entities.Pool // The pool that the staked positions must provide in.
-	StartTime   *big.Int       // The time when the incentive program begins.
-	EndTime     *big.Int       // The time that the incentive program ends.
+	StartTime   *int256.Int    // The time when the incentive program begins.
+	EndTime     *int256.Int    // The time that the incentive program ends.
 	Refundee    common.Address // The address which receives any remaining reward tokens at `endTime`.
 }
 
 type IncentiveKeyParams struct {
 	RewardToken common.Address
 	Pool        common.Address
-	StartTime   *big.Int
-	EndTime     *big.Int
+	StartTime   *int256.Int
+	EndTime     *int256.Int
 	Refundee    common.Address
 }
 
 // Options to specify when claiming rewards.
 type ClaimOptions struct {
-	TokenID   *big.Int       // The id of the NFT
+	TokenID   *int256.Int    // The id of the NFT
 	Recipient common.Address // Address to send rewards to.
-	Amount    *big.Int       // The amount of `rewardToken` to claim. 0 claims all.
+	Amount    *int256.Int    // The amount of `rewardToken` to claim. 0 claims all.
 }
 
 // Options to specify when withdrawing a position.
@@ -71,7 +72,7 @@ func EncodeClaim(incentiveKey *IncentiveKey, options *ClaimOptions) ([][]byte, e
 	}
 	calldatas = append(calldatas, calldata)
 
-	amount := big.NewInt(0)
+	amount := int256.NewInt(0)
 	if options.Amount != nil {
 		amount = options.Amount
 	}

@@ -1,9 +1,8 @@
 package utils
 
 import (
-	"math/big"
-
 	"github.com/KyberNetwork/promm-sdk-go/constants"
+	"github.com/linhbkhn95/int256"
 )
 
 /**
@@ -17,13 +16,13 @@ import (
  * @param amount0 The token0 amount
  * @returns liquidity for amount0, imprecise
  */
-func maxLiquidityForAmount0Imprecise(sqrtRatioAX96, sqrtRatioBX96, amount0 *big.Int) *big.Int {
+func maxLiquidityForAmount0Imprecise(sqrtRatioAX96, sqrtRatioBX96, amount0 *int256.Int) *int256.Int {
 	if sqrtRatioAX96.Cmp(sqrtRatioBX96) > 0 {
 		sqrtRatioAX96, sqrtRatioBX96 = sqrtRatioBX96, sqrtRatioAX96
 	}
-	temp := new(big.Int).Mul(sqrtRatioAX96, sqrtRatioBX96)
+	temp := int256.New().Mul(sqrtRatioAX96, sqrtRatioBX96)
 	intermediate := temp.Div(temp, constants.Q96)
-	return new(big.Int).Div(intermediate.Mul(amount0, intermediate), new(big.Int).Sub(sqrtRatioBX96, sqrtRatioAX96))
+	return int256.New().Div(intermediate.Mul(amount0, intermediate), int256.New().Sub(sqrtRatioBX96, sqrtRatioAX96))
 }
 
 /**
@@ -34,14 +33,14 @@ func maxLiquidityForAmount0Imprecise(sqrtRatioAX96, sqrtRatioBX96, amount0 *big.
  * @param amount0 The token0 amount
  * @returns liquidity for amount0, precise
  */
-func maxLiquidityForAmount0Precise(sqrtRatioAX96, sqrtRatioBX96, amount0 *big.Int) *big.Int {
+func maxLiquidityForAmount0Precise(sqrtRatioAX96, sqrtRatioBX96, amount0 *int256.Int) *int256.Int {
 	if sqrtRatioAX96.Cmp(sqrtRatioBX96) > 0 {
 		sqrtRatioAX96, sqrtRatioBX96 = sqrtRatioBX96, sqrtRatioAX96
 	}
-	temp := new(big.Int).Mul(amount0, sqrtRatioAX96)
+	temp := int256.New().Mul(amount0, sqrtRatioAX96)
 	numerator := temp.Mul(temp, sqrtRatioBX96)
 	denominator := sqrtRatioBX96.Mul(constants.Q96, sqrtRatioBX96.Sub(sqrtRatioBX96, sqrtRatioAX96))
-	return new(big.Int).Div(numerator, denominator)
+	return int256.New().Div(numerator, denominator)
 }
 
 /**
@@ -51,12 +50,12 @@ func maxLiquidityForAmount0Precise(sqrtRatioAX96, sqrtRatioBX96, amount0 *big.In
  * @param amount1 The token1 amount
  * @returns liquidity for amount1
  */
-func maxLiquidityForAmount1(sqrtRatioAX96, sqrtRatioBX96, amount1 *big.Int) *big.Int {
+func maxLiquidityForAmount1(sqrtRatioAX96, sqrtRatioBX96, amount1 *int256.Int) *int256.Int {
 	if sqrtRatioAX96.Cmp(sqrtRatioBX96) > 0 {
 		sqrtRatioAX96, sqrtRatioBX96 = sqrtRatioBX96, sqrtRatioAX96
 	}
-	temp := new(big.Int).Mul(amount1, constants.Q96)
-	return temp.Div(temp, new(big.Int).Sub(sqrtRatioBX96, sqrtRatioAX96))
+	temp := int256.New().Mul(amount1, constants.Q96)
+	return temp.Div(temp, int256.New().Sub(sqrtRatioBX96, sqrtRatioAX96))
 }
 
 /**
@@ -70,11 +69,11 @@ func maxLiquidityForAmount1(sqrtRatioAX96, sqrtRatioBX96, amount1 *big.Int) *big
  * @param useFullPrecision if false, liquidity will be maximized according to what the router can calculate,
  * not what core can theoretically support
  */
-func MaxLiquidityForAmounts(sqrtRatioCurrentX96 *big.Int, sqrtRatioAX96, sqrtRatioBX96 *big.Int, amount0, amount1 *big.Int, useFullPrecision bool) *big.Int {
+func MaxLiquidityForAmounts(sqrtRatioCurrentX96 *int256.Int, sqrtRatioAX96, sqrtRatioBX96 *int256.Int, amount0, amount1 *int256.Int, useFullPrecision bool) *int256.Int {
 	if sqrtRatioAX96.Cmp(sqrtRatioBX96) > 0 {
 		sqrtRatioAX96, sqrtRatioBX96 = sqrtRatioBX96, sqrtRatioAX96
 	}
-	var maxLiquidityForAmount0 func(*big.Int, *big.Int, *big.Int) *big.Int
+	var maxLiquidityForAmount0 func(*int256.Int, *int256.Int, *int256.Int) *int256.Int
 	if useFullPrecision {
 		maxLiquidityForAmount0 = maxLiquidityForAmount0Precise
 	} else {

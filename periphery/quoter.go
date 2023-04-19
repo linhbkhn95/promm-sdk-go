@@ -11,6 +11,7 @@ import (
 	"github.com/KyberNetwork/promm-sdk-go/utils"
 	core "github.com/daoleno/uniswap-sdk-core/entities"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/linhbkhn95/int256"
 )
 
 //go:embed contracts/lens/Quoter.sol/Quoter.json
@@ -20,7 +21,7 @@ var ErrMultihopPriceLimit = errors.New("MULTIHOP_PRICE_LIMIT")
 
 // Optional arguments to send to the quoter.
 type QuoteOptions struct {
-	SqrtPriceLimitX96 *big.Int // The optional price limit for the trade.
+	SqrtPriceLimitX96 *int256.Int // The optional price limit for the trade.
 }
 
 /**
@@ -51,22 +52,22 @@ func QuoteCallParameters(
 		calldata []byte
 		err      error
 	)
-	sqrtPriceLimitX96 := big.NewInt(0)
+	sqrtPriceLimitX96 := int256.NewInt(0)
 	if options != nil {
 		sqrtPriceLimitX96 = options.SqrtPriceLimitX96
 	}
 
 	if singleHop {
 		if tradeType == core.ExactInput {
-			calldata, err = abi.Pack("quoteExactInputSingle", route.TokenPath[0].Address, route.TokenPath[1].Address, big.NewInt(int64(route.Pools[0].Fee)), quoteAmount, sqrtPriceLimitX96)
+			calldata, err = abi.Pack("quoteExactInputSingle", route.TokenPath[0].Address, route.TokenPath[1].Address, int256.NewInt(int64(route.Pools[0].Fee)), quoteAmount, sqrtPriceLimitX96)
 		} else {
-			calldata, err = abi.Pack("quoteExactOutputSingle", route.TokenPath[0].Address, route.TokenPath[1].Address, big.NewInt(int64(route.Pools[0].Fee)), quoteAmount, sqrtPriceLimitX96)
+			calldata, err = abi.Pack("quoteExactOutputSingle", route.TokenPath[0].Address, route.TokenPath[1].Address, int256.NewInt(int64(route.Pools[0].Fee)), quoteAmount, sqrtPriceLimitX96)
 		}
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		if options != nil && sqrtPriceLimitX96 != big.NewInt(0) {
+		if options != nil && sqrtPriceLimitX96 != int256.NewInt(0) {
 			return nil, ErrMultihopPriceLimit
 		}
 		path, err := EncodeRouteToPath(route, tradeType == core.ExactOutput)

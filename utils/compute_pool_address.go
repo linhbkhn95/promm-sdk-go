@@ -1,12 +1,11 @@
 package utils
 
 import (
-	"math/big"
-
 	"github.com/daoleno/uniswap-sdk-core/entities"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/linhbkhn95/int256"
 
 	"github.com/KyberNetwork/promm-sdk-go/constants"
 )
@@ -57,7 +56,7 @@ func abiEncode(addressA, addressB common.Address, fee constants.FeeAmount) []byt
 	bytes, _ := arguments.Pack(
 		addressA,
 		addressB,
-		big.NewInt(int64(fee)),
+		int256.NewInt(int64(fee)),
 	)
 	return bytes
 }

@@ -1,98 +1,98 @@
 package utils
 
 import (
-	"math/big"
 	"reflect"
 	"testing"
 
 	"github.com/daoleno/uniswap-sdk-core/entities"
+	"github.com/linhbkhn95/int256"
 )
 
 func TestMaxLiquidityForAmounts(t *testing.T) {
 	type args struct {
-		sqrtRatioCurrentX96 *big.Int
-		sqrtRatioAX96       *big.Int
-		sqrtRatioBX96       *big.Int
-		amount0             *big.Int
-		amount1             *big.Int
+		sqrtRatioCurrentX96 *int256.Int
+		sqrtRatioAX96       *int256.Int
+		sqrtRatioBX96       *int256.Int
+		amount0             *int256.Int
+		amount1             *int256.Int
 		useFullPrecision    bool
 	}
-	lgamounts0, _ := new(big.Int).SetString("1214437677402050006470401421068302637228917309992228326090730924516431320489727", 10)
-	lgamounts1, _ := new(big.Int).SetString("1214437677402050006470401421098959354205873606971497132040612572422243086574654", 10)
-	lgamounts2, _ := new(big.Int).SetString("1214437677402050006470401421082903520362793114274352355276488318240158678126184", 10)
+	lgamounts0, _ := int256.New().SetString("1214437677402050006470401421068302637228917309992228326090730924516431320489727")
+	lgamounts1, _ := int256.New().SetString("1214437677402050006470401421098959354205873606971497132040612572422243086574654")
+	lgamounts2, _ := int256.New().SetString("1214437677402050006470401421082903520362793114274352355276488318240158678126184")
 	tests := []struct {
 		name string
 		args args
-		want *big.Int
+		want *int256.Int
 	}{
 		{
 			name: "imprecise - price inside - 100 token0, 200 token1",
 			args: args{
-				EncodeSqrtRatioX96(big.NewInt(1), big.NewInt(1)),
-				EncodeSqrtRatioX96(big.NewInt(100), big.NewInt(110)),
-				EncodeSqrtRatioX96(big.NewInt(110), big.NewInt(100)),
-				big.NewInt(100),
-				big.NewInt(200),
+				EncodeSqrtRatioX96(int256.NewInt(1), int256.NewInt(1)),
+				EncodeSqrtRatioX96(int256.NewInt(100), int256.NewInt(110)),
+				EncodeSqrtRatioX96(int256.NewInt(110), int256.NewInt(100)),
+				int256.NewInt(100),
+				int256.NewInt(200),
 				false,
 			},
-			want: big.NewInt(2148),
+			want: int256.NewInt(2148),
 		},
 		{
 			name: "imprecise - price inside - 100 token0, max token1",
 			args: args{
-				EncodeSqrtRatioX96(big.NewInt(1), big.NewInt(1)),
-				EncodeSqrtRatioX96(big.NewInt(100), big.NewInt(110)),
-				EncodeSqrtRatioX96(big.NewInt(110), big.NewInt(100)),
-				big.NewInt(100),
-				entities.MaxUint256,
+				EncodeSqrtRatioX96(int256.NewInt(1), int256.NewInt(1)),
+				EncodeSqrtRatioX96(int256.NewInt(100), int256.NewInt(110)),
+				EncodeSqrtRatioX96(int256.NewInt(110), int256.NewInt(100)),
+				int256.NewInt(100),
+				int256.MustFromBig(entities.MaxUint256),
 				false,
 			},
-			want: big.NewInt(2148),
+			want: int256.NewInt(2148),
 		},
 		{
 			name: "imprecise - price inside - max token0, 200 token1",
 			args: args{
-				EncodeSqrtRatioX96(big.NewInt(1), big.NewInt(1)),
-				EncodeSqrtRatioX96(big.NewInt(100), big.NewInt(110)),
-				EncodeSqrtRatioX96(big.NewInt(110), big.NewInt(100)),
-				entities.MaxUint256,
-				big.NewInt(200),
+				EncodeSqrtRatioX96(int256.NewInt(1), int256.NewInt(1)),
+				EncodeSqrtRatioX96(int256.NewInt(100), int256.NewInt(110)),
+				EncodeSqrtRatioX96(int256.NewInt(110), int256.NewInt(100)),
+				int256.MustFromBig(entities.MaxUint256),
+				int256.NewInt(200),
 				false,
 			},
-			want: big.NewInt(4297),
+			want: int256.NewInt(4297),
 		},
 		{
 			name: "imprecise - price below - 100 token0, 200 token1",
 			args: args{
-				EncodeSqrtRatioX96(big.NewInt(99), big.NewInt(110)),
-				EncodeSqrtRatioX96(big.NewInt(100), big.NewInt(110)),
-				EncodeSqrtRatioX96(big.NewInt(110), big.NewInt(100)),
-				big.NewInt(100),
-				big.NewInt(200),
+				EncodeSqrtRatioX96(int256.NewInt(99), int256.NewInt(110)),
+				EncodeSqrtRatioX96(int256.NewInt(100), int256.NewInt(110)),
+				EncodeSqrtRatioX96(int256.NewInt(110), int256.NewInt(100)),
+				int256.NewInt(100),
+				int256.NewInt(200),
 				false,
 			},
-			want: big.NewInt(1048),
+			want: int256.NewInt(1048),
 		},
 		{
 			name: "imprecise - price below - 100 token0, max token1",
 			args: args{
-				EncodeSqrtRatioX96(big.NewInt(99), big.NewInt(110)),
-				EncodeSqrtRatioX96(big.NewInt(100), big.NewInt(110)),
-				EncodeSqrtRatioX96(big.NewInt(110), big.NewInt(100)),
-				big.NewInt(100),
-				entities.MaxUint256,
+				EncodeSqrtRatioX96(int256.NewInt(99), int256.NewInt(110)),
+				EncodeSqrtRatioX96(int256.NewInt(100), int256.NewInt(110)),
+				EncodeSqrtRatioX96(int256.NewInt(110), int256.NewInt(100)),
+				int256.NewInt(100),
+				int256.MustFromBig(entities.MaxUint256),
 				false,
 			},
-			want: big.NewInt(1048),
+			want: int256.NewInt(1048),
 		},
 		{
 			name: "imprecise - price below - max token0, 200 token1",
 			args: args{
-				EncodeSqrtRatioX96(big.NewInt(99), big.NewInt(110)),
-				EncodeSqrtRatioX96(big.NewInt(100), big.NewInt(110)),
-				EncodeSqrtRatioX96(big.NewInt(110), big.NewInt(100)),
-				entities.MaxUint256,
-				big.NewInt(200),
+				EncodeSqrtRatioX96(int256.NewInt(99), int256.NewInt(110)),
+				EncodeSqrtRatioX96(int256.NewInt(100), int256.NewInt(110)),
+				EncodeSqrtRatioX96(int256.NewInt(110), int256.NewInt(100)),
+				int256.MustFromBig(entities.MaxUint256),
+				int256.NewInt(200),
 				false,
 			},
 			want: lgamounts0,
@@ -100,23 +100,23 @@ func TestMaxLiquidityForAmounts(t *testing.T) {
 		{
 			name: "imprecise - price above - 100 token0, 200 token1",
 			args: args{
-				EncodeSqrtRatioX96(big.NewInt(111), big.NewInt(100)),
-				EncodeSqrtRatioX96(big.NewInt(100), big.NewInt(110)),
-				EncodeSqrtRatioX96(big.NewInt(110), big.NewInt(100)),
-				big.NewInt(100),
-				big.NewInt(200),
+				EncodeSqrtRatioX96(int256.NewInt(111), int256.NewInt(100)),
+				EncodeSqrtRatioX96(int256.NewInt(100), int256.NewInt(110)),
+				EncodeSqrtRatioX96(int256.NewInt(110), int256.NewInt(100)),
+				int256.NewInt(100),
+				int256.NewInt(200),
 				false,
 			},
-			want: big.NewInt(2097),
+			want: int256.NewInt(2097),
 		},
 		{
 			name: "imprecise - price above - 100 token0, max token1",
 			args: args{
-				EncodeSqrtRatioX96(big.NewInt(111), big.NewInt(100)),
-				EncodeSqrtRatioX96(big.NewInt(100), big.NewInt(110)),
-				EncodeSqrtRatioX96(big.NewInt(110), big.NewInt(100)),
-				big.NewInt(100),
-				entities.MaxUint256,
+				EncodeSqrtRatioX96(int256.NewInt(111), int256.NewInt(100)),
+				EncodeSqrtRatioX96(int256.NewInt(100), int256.NewInt(110)),
+				EncodeSqrtRatioX96(int256.NewInt(110), int256.NewInt(100)),
+				int256.NewInt(100),
+				int256.MustFromBig(entities.MaxUint256),
 				false,
 			},
 			want: lgamounts1,
@@ -124,83 +124,83 @@ func TestMaxLiquidityForAmounts(t *testing.T) {
 		{
 			name: "imprecise - price above - max token0, 200 token1",
 			args: args{
-				EncodeSqrtRatioX96(big.NewInt(111), big.NewInt(100)),
-				EncodeSqrtRatioX96(big.NewInt(100), big.NewInt(110)),
-				EncodeSqrtRatioX96(big.NewInt(110), big.NewInt(100)),
-				entities.MaxUint256,
-				big.NewInt(200),
+				EncodeSqrtRatioX96(int256.NewInt(111), int256.NewInt(100)),
+				EncodeSqrtRatioX96(int256.NewInt(100), int256.NewInt(110)),
+				EncodeSqrtRatioX96(int256.NewInt(110), int256.NewInt(100)),
+				int256.MustFromBig(entities.MaxUint256),
+				int256.NewInt(200),
 				false,
 			},
-			want: big.NewInt(2097),
+			want: int256.NewInt(2097),
 		},
 		{
 			name: "precise - price inside - 100 token0, 200 token1",
 			args: args{
-				EncodeSqrtRatioX96(big.NewInt(1), big.NewInt(1)),
-				EncodeSqrtRatioX96(big.NewInt(100), big.NewInt(110)),
-				EncodeSqrtRatioX96(big.NewInt(110), big.NewInt(100)),
-				big.NewInt(100),
-				big.NewInt(200),
+				EncodeSqrtRatioX96(int256.NewInt(1), int256.NewInt(1)),
+				EncodeSqrtRatioX96(int256.NewInt(100), int256.NewInt(110)),
+				EncodeSqrtRatioX96(int256.NewInt(110), int256.NewInt(100)),
+				int256.NewInt(100),
+				int256.NewInt(200),
 				true,
 			},
-			want: big.NewInt(2148),
+			want: int256.NewInt(2148),
 		},
 		{
 			name: "precise - price inside - 100 token0, max token1",
 			args: args{
-				EncodeSqrtRatioX96(big.NewInt(1), big.NewInt(1)),
-				EncodeSqrtRatioX96(big.NewInt(100), big.NewInt(110)),
-				EncodeSqrtRatioX96(big.NewInt(110), big.NewInt(100)),
-				big.NewInt(100),
-				entities.MaxUint256,
+				EncodeSqrtRatioX96(int256.NewInt(1), int256.NewInt(1)),
+				EncodeSqrtRatioX96(int256.NewInt(100), int256.NewInt(110)),
+				EncodeSqrtRatioX96(int256.NewInt(110), int256.NewInt(100)),
+				int256.NewInt(100),
+				int256.MustFromBig(entities.MaxUint256),
 				true,
 			},
-			want: big.NewInt(2148),
+			want: int256.NewInt(2148),
 		},
 		{
 			name: "precise - price inside - max token0, 200 token1",
 			args: args{
-				EncodeSqrtRatioX96(big.NewInt(1), big.NewInt(1)),
-				EncodeSqrtRatioX96(big.NewInt(100), big.NewInt(110)),
-				EncodeSqrtRatioX96(big.NewInt(110), big.NewInt(100)),
-				entities.MaxUint256,
-				big.NewInt(200),
+				EncodeSqrtRatioX96(int256.NewInt(1), int256.NewInt(1)),
+				EncodeSqrtRatioX96(int256.NewInt(100), int256.NewInt(110)),
+				EncodeSqrtRatioX96(int256.NewInt(110), int256.NewInt(100)),
+				int256.MustFromBig(entities.MaxUint256),
+				int256.NewInt(200),
 				true,
 			},
-			want: big.NewInt(4297),
+			want: int256.NewInt(4297),
 		},
 		{
 			name: "precise - price below - 100 token0, 200 token1",
 			args: args{
-				EncodeSqrtRatioX96(big.NewInt(99), big.NewInt(110)),
-				EncodeSqrtRatioX96(big.NewInt(100), big.NewInt(110)),
-				EncodeSqrtRatioX96(big.NewInt(110), big.NewInt(100)),
-				big.NewInt(100),
-				big.NewInt(200),
+				EncodeSqrtRatioX96(int256.NewInt(99), int256.NewInt(110)),
+				EncodeSqrtRatioX96(int256.NewInt(100), int256.NewInt(110)),
+				EncodeSqrtRatioX96(int256.NewInt(110), int256.NewInt(100)),
+				int256.NewInt(100),
+				int256.NewInt(200),
 				true,
 			},
-			want: big.NewInt(1048),
+			want: int256.NewInt(1048),
 		},
 		{
 			name: "precise - price below - 100 token0, max token1",
 			args: args{
-				EncodeSqrtRatioX96(big.NewInt(99), big.NewInt(110)),
-				EncodeSqrtRatioX96(big.NewInt(100), big.NewInt(110)),
-				EncodeSqrtRatioX96(big.NewInt(110), big.NewInt(100)),
-				big.NewInt(100),
-				entities.MaxUint256,
+				EncodeSqrtRatioX96(int256.NewInt(99), int256.NewInt(110)),
+				EncodeSqrtRatioX96(int256.NewInt(100), int256.NewInt(110)),
+				EncodeSqrtRatioX96(int256.NewInt(110), int256.NewInt(100)),
+				int256.NewInt(100),
+				int256.MustFromBig(entities.MaxUint256),
 				true,
 			},
-			want: big.NewInt(1048),
+			want: int256.NewInt(1048),
 		},
 		{
 			name: "precise - price below - max token0, 200 token1",
 			args: args{
-				EncodeSqrtRatioX96(big.NewInt(99), big.NewInt(110)),
-				EncodeSqrtRatioX96(big.NewInt(100), big.NewInt(110)),
-				EncodeSqrtRatioX96(big.NewInt(110), big.NewInt(100)),
-				entities.MaxUint256,
-				big.NewInt(200),
+				EncodeSqrtRatioX96(int256.NewInt(99), int256.NewInt(110)),
+				EncodeSqrtRatioX96(int256.NewInt(100), int256.NewInt(110)),
+				EncodeSqrtRatioX96(int256.NewInt(110), int256.NewInt(100)),
+				int256.MustFromBig(entities.MaxUint256),
+				int256.NewInt(200),
 				true,
 			},
 			want: lgamounts2,
@@ -208,23 +208,23 @@ func TestMaxLiquidityForAmounts(t *testing.T) {
 		{
 			name: "precise - price above - 100 token0, 200 token1",
 			args: args{
-				EncodeSqrtRatioX96(big.NewInt(111), big.NewInt(100)),
-				EncodeSqrtRatioX96(big.NewInt(100), big.NewInt(110)),
-				EncodeSqrtRatioX96(big.NewInt(110), big.NewInt(100)),
-				big.NewInt(100),
-				big.NewInt(200),
+				EncodeSqrtRatioX96(int256.NewInt(111), int256.NewInt(100)),
+				EncodeSqrtRatioX96(int256.NewInt(100), int256.NewInt(110)),
+				EncodeSqrtRatioX96(int256.NewInt(110), int256.NewInt(100)),
+				int256.NewInt(100),
+				int256.NewInt(200),
 				true,
 			},
-			want: big.NewInt(2097),
+			want: int256.NewInt(2097),
 		},
 		{
 			name: "precise - price above - 100 token0, max token1",
 			args: args{
-				EncodeSqrtRatioX96(big.NewInt(111), big.NewInt(100)),
-				EncodeSqrtRatioX96(big.NewInt(100), big.NewInt(110)),
-				EncodeSqrtRatioX96(big.NewInt(110), big.NewInt(100)),
-				big.NewInt(100),
-				entities.MaxUint256,
+				EncodeSqrtRatioX96(int256.NewInt(111), int256.NewInt(100)),
+				EncodeSqrtRatioX96(int256.NewInt(100), int256.NewInt(110)),
+				EncodeSqrtRatioX96(int256.NewInt(110), int256.NewInt(100)),
+				int256.NewInt(100),
+				int256.MustFromBig(entities.MaxUint256),
 				true,
 			},
 			want: lgamounts1,
@@ -232,14 +232,14 @@ func TestMaxLiquidityForAmounts(t *testing.T) {
 		{
 			name: "precise - price above - max token0, 200 token1",
 			args: args{
-				EncodeSqrtRatioX96(big.NewInt(111), big.NewInt(100)),
-				EncodeSqrtRatioX96(big.NewInt(100), big.NewInt(110)),
-				EncodeSqrtRatioX96(big.NewInt(110), big.NewInt(100)),
-				entities.MaxUint256,
-				big.NewInt(200),
+				EncodeSqrtRatioX96(int256.NewInt(111), int256.NewInt(100)),
+				EncodeSqrtRatioX96(int256.NewInt(100), int256.NewInt(110)),
+				EncodeSqrtRatioX96(int256.NewInt(110), int256.NewInt(100)),
+				int256.MustFromBig(entities.MaxUint256),
+				int256.NewInt(200),
 				true,
 			},
-			want: big.NewInt(2097),
+			want: int256.NewInt(2097),
 		},
 	}
 	for _, tt := range tests {

@@ -33,7 +33,7 @@ import (
 var (
 	USDC     = core.NewToken(1, common.HexToAddress("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"), 6, "USDC", "USD Coin")
 	DAI      = core.NewToken(1, common.HexToAddress("0x6B175474E89094C44Da98b954EedeAC495271d0F"), 18, "DAI", "Dai Stablecoin")
-	OneEther = big.NewInt(1e18)
+	OneEther = int256.NewInt(1e18)
 )
 
 func main() {
@@ -46,7 +46,7 @@ func main() {
 		},
 		{
 			Index:          entities.NearestUsableTick(utils.MaxTick, constants.TickSpacings[constants.FeeLow]),
-			LiquidityNet:   new(big.Int).Mul(OneEther, constants.NegativeOne),
+			LiquidityNet:   int256.New().Mul(OneEther, constants.NegativeOne),
 			LiquidityGross: OneEther,
 		},
 	}
@@ -64,7 +64,7 @@ func main() {
 	}
 
 	// USDC -> DAI
-	outputAmount := core.FromRawAmount(DAI.Currency, big.NewInt(98))
+	outputAmount := core.FromRawAmount(DAI.Currency, int256.NewInt(98))
 	inputAmount, _, err := pool.GetInputAmount(outputAmount, nil)
 	if err != nil {
 		panic(err)

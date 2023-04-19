@@ -2,10 +2,10 @@ package entities
 
 import (
 	"errors"
-	"math/big"
 
 	"github.com/daoleno/uniswap-sdk-core/entities"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/linhbkhn95/int256"
 
 	"github.com/KyberNetwork/promm-sdk-go/constants"
 	"github.com/KyberNetwork/promm-sdk-go/utils"
@@ -20,13 +20,13 @@ var (
 )
 
 type StepComputations struct {
-	sqrtPriceStartX96 *big.Int
+	sqrtPriceStartX96 *int256.Int
 	tickNext          int
 	initialized       bool
-	sqrtPriceNextX96  *big.Int
-	amountIn          *big.Int
-	amountOut         *big.Int
-	deltaL            *big.Int
+	sqrtPriceNextX96  *int256.Int
+	amountIn          *int256.Int
+	amountOut         *int256.Int
+	deltaL            *int256.Int
 }
 
 // Represents a V3 pool
@@ -34,9 +34,9 @@ type Pool struct {
 	Token0            *entities.Token
 	Token1            *entities.Token
 	Fee               constants.FeeAmount
-	SqrtRatioX96      *big.Int
-	Liquidity         *big.Int
-	ReinvestLiquidity *big.Int
+	SqrtRatioX96      *int256.Int
+	Liquidity         *int256.Int
+	ReinvestLiquidity *int256.Int
 	TickCurrent       int
 	TickDataProvider  TickDataProvider
 
@@ -61,8 +61,8 @@ func GetAddress(
  * @param ticks The current state of the pool ticks or a data provider that can return tick data
  */
 func NewPool(
-	tokenA, tokenB *entities.Token, fee constants.FeeAmount, sqrtRatioX96 *big.Int,
-	liquidity, reinvestLiquidity *big.Int, tickCurrent int, ticks TickDataProvider,
+	tokenA, tokenB *entities.Token, fee constants.FeeAmount, sqrtRatioX96 *int256.Int,
+	liquidity, reinvestLiquidity *int256.Int, tickCurrent int, ticks TickDataProvider,
 ) (*Pool, error) {
 	if fee >= constants.FeeMax {
 		return nil, ErrFeeTooHigh
@@ -118,7 +118,7 @@ func (p *Pool) Token0Price() *entities.Price {
 		return p.token0Price
 	}
 	p.token0Price = entities.NewPrice(
-		p.Token0, p.Token1, constants.Q192, new(big.Int).Mul(p.SqrtRatioX96, p.SqrtRatioX96),
+		p.Token0, p.Token1, constants.Q192BigInt, int256.New().Mul(p.SqrtRatioX96, p.SqrtRatioX96).ToBig(),
 	)
 	return p.token0Price
 }
@@ -129,7 +129,7 @@ func (p *Pool) Token1Price() *entities.Price {
 		return p.token1Price
 	}
 	p.token1Price = entities.NewPrice(
-		p.Token1, p.Token0, new(big.Int).Mul(p.SqrtRatioX96, p.SqrtRatioX96), constants.Q192,
+		p.Token1, p.Token0, int256.New().Mul(p.SqrtRatioX96, p.SqrtRatioX96).ToBig(), constants.Q192BigInt,
 	)
 	return p.token1Price
 }
@@ -161,14 +161,15 @@ func (p *Pool) ChainID() uint {
  * @returns The output amount and the pool with updated state
  */
 func (p *Pool) GetOutputAmount(
-	inputAmount *entities.CurrencyAmount, sqrtPriceLimitX96 *big.Int,
+	inputAmount *entities.CurrencyAmount, sqrtPriceLimitX96 *int256.Int,
 ) (*entities.CurrencyAmount, *Pool, error) {
 	if !(inputAmount.Currency.IsToken() && p.InvolvesToken(inputAmount.Currency.Wrapped())) {
 		return nil, nil, ErrTokenNotInvolved
 	}
 	zeroForOne := inputAmount.Currency.Equal(p.Token0)
+	quotient, _ := int256.FromBig(inputAmount.Quotient())
 	outputAmount, sqrtRatioX96, liquidity, reinvestLiquidity, tickCurrent, err := p.swap(
-		zeroForOne, inputAmount.Quotient(), sqrtPriceLimitX96,
+		zeroForOne, quotient, sqrtPriceLimitX96,
 	)
 	if err != nil {
 		return nil, nil, err
@@ -186,7 +187,7 @@ func (p *Pool) GetOutputAmount(
 		return nil, nil, err
 	}
 	return entities.FromRawAmount(
-		outputToken, new(big.Int).Mul(outputAmount, constants.NegativeOne),
+		outputToken, int256.New().Mul(outputAmount, constants.NegativeOne).ToBig(),
 	), pool, nil
 }
 
@@ -197,14 +198,15 @@ func (p *Pool) GetOutputAmount(
  * @returns The input amount and the pool with updated state
  */
 func (p *Pool) GetInputAmount(
-	outputAmount *entities.CurrencyAmount, sqrtPriceLimitX96 *big.Int,
+	outputAmount *entities.CurrencyAmount, sqrtPriceLimitX96 *int256.Int,
 ) (*entities.CurrencyAmount, *Pool, error) {
 	if !(outputAmount.Currency.IsToken() && p.InvolvesToken(outputAmount.Currency.Wrapped())) {
 		return nil, nil, ErrTokenNotInvolved
 	}
 	zeroForOne := outputAmount.Currency.Equal(p.Token1)
+	quotient, _ := int256.FromBig(outputAmount.Quotient())
 	inputAmount, sqrtRatioX96, liquidity, reinvestLiquidity, tickCurrent, err := p.swap(
-		zeroForOne, new(big.Int).Mul(outputAmount.Quotient(), constants.NegativeOne), sqrtPriceLimitX96,
+		zeroForOne, int256.New().Mul(quotient, constants.NegativeOne), sqrtPriceLimitX96,
 	)
 	if err != nil {
 		return nil, nil, err
@@ -221,7 +223,7 @@ func (p *Pool) GetInputAmount(
 	if err != nil {
 		return nil, nil, err
 	}
-	return entities.FromRawAmount(inputToken, inputAmount), pool, nil
+	return entities.FromRawAmount(inputToken, inputAmount.ToBig()), pool, nil
 }
 
 /**
@@ -234,14 +236,14 @@ func (p *Pool) GetInputAmount(
  * @returns liquidity
  * @returns tickCurrent
  */
-func (p *Pool) swap(zeroForOne bool, amountSpecified, sqrtPriceLimitX96 *big.Int) (
-	amountCalCulated *big.Int, sqrtRatioX96 *big.Int, liquidity, reinvestLiquidity *big.Int, tickCurrent int, err error,
+func (p *Pool) swap(zeroForOne bool, amountSpecified, sqrtPriceLimitX96 *int256.Int) (
+	amountCalCulated *int256.Int, sqrtRatioX96 *int256.Int, liquidity, reinvestLiquidity *int256.Int, tickCurrent int, err error,
 ) {
 	if sqrtPriceLimitX96 == nil {
 		if zeroForOne {
-			sqrtPriceLimitX96 = new(big.Int).Add(utils.MinSqrtRatio, constants.One)
+			sqrtPriceLimitX96 = int256.New().Add(utils.MinSqrtRatio, constants.One)
 		} else {
-			sqrtPriceLimitX96 = new(big.Int).Sub(utils.MaxSqrtRatio, constants.One)
+			sqrtPriceLimitX96 = int256.New().Sub(utils.MaxSqrtRatio, constants.One)
 		}
 	}
 
@@ -266,12 +268,12 @@ func (p *Pool) swap(zeroForOne bool, amountSpecified, sqrtPriceLimitX96 *big.Int
 	// keep track of swap state
 
 	state := struct {
-		amountSpecifiedRemaining *big.Int
-		amountCalculated         *big.Int
-		sqrtPriceX96             *big.Int
+		amountSpecifiedRemaining *int256.Int
+		amountCalculated         *int256.Int
+		sqrtPriceX96             *int256.Int
 		tick                     int
-		liquidity                *big.Int
-		reinvestLiquidity        *big.Int
+		liquidity                *int256.Int
+		reinvestLiquidity        *int256.Int
 	}{
 		amountSpecifiedRemaining: amountSpecified,
 		amountCalculated:         constants.Zero,
@@ -306,7 +308,7 @@ func (p *Pool) swap(zeroForOne bool, amountSpecified, sqrtPriceLimitX96 *big.Int
 		if err != nil {
 			return nil, nil, nil, nil, 0, err
 		}
-		var targetValue *big.Int
+		var targetValue *int256.Int
 		if zeroForOne {
 			if step.sqrtPriceNextX96.Cmp(sqrtPriceLimitX96) < 0 {
 				targetValue = sqrtPriceLimitX96
@@ -322,16 +324,16 @@ func (p *Pool) swap(zeroForOne bool, amountSpecified, sqrtPriceLimitX96 *big.Int
 		}
 
 		state.sqrtPriceX96, step.amountIn, step.amountOut, step.deltaL, err = utils.ComputeSwapStep(
-			state.sqrtPriceX96, targetValue, new(big.Int).Add(state.liquidity, state.reinvestLiquidity),
+			state.sqrtPriceX96, targetValue, int256.New().Add(state.liquidity, state.reinvestLiquidity),
 			state.amountSpecifiedRemaining, p.Fee, exactInput, zeroForOne,
 		)
 		if err != nil {
 			return nil, nil, nil, nil, 0, err
 		}
 
-		state.amountSpecifiedRemaining = new(big.Int).Sub(state.amountSpecifiedRemaining, step.amountIn)
-		state.amountCalculated = new(big.Int).Add(state.amountCalculated, step.amountOut)
-		state.reinvestLiquidity = new(big.Int).Add(state.reinvestLiquidity, step.deltaL)
+		state.amountSpecifiedRemaining = int256.New().Sub(state.amountSpecifiedRemaining, step.amountIn)
+		state.amountCalculated = int256.New().Add(state.amountCalculated, step.amountOut)
+		state.reinvestLiquidity = int256.New().Add(state.reinvestLiquidity, step.deltaL)
 
 		// TODO
 		if state.sqrtPriceX96.Cmp(step.sqrtPriceNextX96) == 0 {
@@ -346,7 +348,7 @@ func (p *Pool) swap(zeroForOne bool, amountSpecified, sqrtPriceLimitX96 *big.Int
 				// if we're moving leftward, we interpret liquidityNet as the opposite sign
 				// safe because liquidityNet cannot be type(int128).min
 				if zeroForOne {
-					liquidityNet = new(big.Int).Mul(liquidityNet, constants.NegativeOne)
+					liquidityNet = int256.New().Mul(liquidityNet, constants.NegativeOne)
 				}
 				state.liquidity = utils.AddDelta(state.liquidity, liquidityNet)
 			}

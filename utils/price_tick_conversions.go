@@ -1,9 +1,8 @@
 package utils
 
 import (
-	"math/big"
-
 	"github.com/daoleno/uniswap-sdk-core/entities"
+	"github.com/linhbkhn95/int256"
 
 	"github.com/KyberNetwork/promm-sdk-go/constants"
 )
@@ -20,16 +19,16 @@ func TickToPrice(baseToken *entities.Token, quoteToken *entities.Token, tick int
 	if err != nil {
 		return nil, err
 	}
-	ratioX192 := new(big.Int).Mul(sqrtRatioX96, sqrtRatioX96)
+	ratioX192 := int256.New().Mul(sqrtRatioX96, sqrtRatioX96)
 
 	sorted, err := baseToken.SortsBefore(quoteToken)
 	if err != nil {
 		return nil, err
 	}
 	if sorted {
-		return entities.NewPrice(baseToken, quoteToken, constants.Q192, ratioX192), nil
+		return entities.NewPrice(baseToken, quoteToken, constants.Q192BigInt, ratioX192.ToBig()), nil
 	}
-	return entities.NewPrice(baseToken, quoteToken, ratioX192, constants.Q192), nil
+	return entities.NewPrice(baseToken, quoteToken, ratioX192.ToBig(), constants.Q192BigInt), nil
 }
 
 /**
@@ -42,11 +41,11 @@ func PriceToClosestTick(price *entities.Price, baseToken, quoteToken *entities.T
 	if err != nil {
 		return 0, err
 	}
-	var sqrtRatioX96 *big.Int
+	var sqrtRatioX96 *int256.Int
 	if sorted {
-		sqrtRatioX96 = EncodeSqrtRatioX96(price.Numerator, price.Denominator)
+		sqrtRatioX96 = EncodeSqrtRatioX96(int256.MustFromBig(price.Numerator), int256.MustFromBig(price.Denominator))
 	} else {
-		sqrtRatioX96 = EncodeSqrtRatioX96(price.Denominator, price.Numerator)
+		sqrtRatioX96 = EncodeSqrtRatioX96(int256.MustFromBig(price.Denominator), int256.MustFromBig(price.Numerator))
 	}
 	tick, err := GetTickAtSqrtRatio(sqrtRatioX96)
 	if err != nil {

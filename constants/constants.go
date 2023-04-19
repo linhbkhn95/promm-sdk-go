@@ -5,6 +5,7 @@ import (
 
 	"github.com/daoleno/uniswap-sdk-core/entities"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/linhbkhn95/int256"
 )
 
 const PoolInitCodeHash = "0xe34f199b19b2b4f47f68442619d555527d244f78a3297ea89325f843f87b8b54"
@@ -47,15 +48,23 @@ var TickSpacings = map[FeeAmount]int{
 }
 
 var (
-	NegativeOne = big.NewInt(-1)
-	Zero        = big.NewInt(0)
-	One         = big.NewInt(1)
-	Two         = big.NewInt(2)
-	BigInt128   = big.NewInt(128)
+	NegativeOne = int256.NewInt(-1)
+	Zero        = int256.NewInt(0)
+	ZeroBigInt  = big.NewInt(0)
+
+	One       = int256.NewInt(1)
+	OneBigInt = big.NewInt(1)
+
+	Two       = int256.NewInt(2)
+	BigInt128 = int256.NewInt(128)
 
 	// used in liquidity amount math
-	Q96  = new(big.Int).Exp(big.NewInt(2), big.NewInt(96), nil)
-	Q192 = new(big.Int).Exp(Q96, big.NewInt(2), nil)
+	Q96  = int256.New().Exp(int256.NewInt(2), int256.NewInt(96), nil)
+	Q192 = int256.New().Exp(Q96, int256.NewInt(2), nil)
+
+	// used in liquidity amount math
+	Q96BigInt  = new(big.Int).Exp(big.NewInt(2), big.NewInt(96), nil)
+	Q192BigInt = new(big.Int).Exp(Q96BigInt, big.NewInt(2), nil)
 
 	PercentZero = entities.NewFraction(big.NewInt(0), big.NewInt(1))
 )

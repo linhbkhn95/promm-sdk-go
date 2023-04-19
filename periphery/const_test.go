@@ -1,10 +1,9 @@
 package periphery
 
 import (
-	"math/big"
-
 	core "github.com/daoleno/uniswap-sdk-core/entities"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/linhbkhn95/int256"
 
 	"github.com/KyberNetwork/promm-sdk-go/constants"
 	"github.com/KyberNetwork/promm-sdk-go/entities"
@@ -20,10 +19,10 @@ var (
 
 	weth = ether.Wrapped()
 
-	pool_0_1_medium, _ = entities.NewPool(token0, token1, constants.Fee004, utils.EncodeSqrtRatioX96(constants.One, constants.One), big.NewInt(0), big.NewInt(0), 0, nil)
-	pool_1_2_low, _    = entities.NewPool(token1, token2, constants.Fee001, utils.EncodeSqrtRatioX96(constants.One, constants.One), big.NewInt(0), big.NewInt(0), 0, nil)
-	pool_0_weth, _     = entities.NewPool(token0, weth, constants.Fee004, utils.EncodeSqrtRatioX96(constants.One, constants.One), big.NewInt(0), big.NewInt(0), 0, nil)
-	pool_1_weth, _     = entities.NewPool(token1, weth, constants.Fee004, utils.EncodeSqrtRatioX96(constants.One, constants.One), big.NewInt(0), big.NewInt(0), 0, nil)
+	pool_0_1_medium, _ = entities.NewPool(token0, token1, constants.Fee004, utils.EncodeSqrtRatioX96(constants.One, constants.One), int256.NewInt(0), int256.NewInt(0), 0, nil)
+	pool_1_2_low, _    = entities.NewPool(token1, token2, constants.Fee001, utils.EncodeSqrtRatioX96(constants.One, constants.One), int256.NewInt(0), int256.NewInt(0), 0, nil)
+	pool_0_weth, _     = entities.NewPool(token0, weth, constants.Fee004, utils.EncodeSqrtRatioX96(constants.One, constants.One), int256.NewInt(0), int256.NewInt(0), 0, nil)
+	pool_1_weth, _     = entities.NewPool(token1, weth, constants.Fee004, utils.EncodeSqrtRatioX96(constants.One, constants.One), int256.NewInt(0), int256.NewInt(0), 0, nil)
 
 	route_0_1, _   = entities.NewRoute([]*entities.Pool{pool_0_1_medium}, token0, token1)
 	route_0_1_2, _ = entities.NewRoute([]*entities.Pool{pool_0_1_medium, pool_1_2_low}, token0, token2)
@@ -34,8 +33,8 @@ var (
 	route_weth_0_1, _ = entities.NewRoute([]*entities.Pool{pool_0_weth, pool_0_1_medium}, weth, token1)
 
 	feeAmount    = constants.Fee004
-	sqrtRatioX96 = utils.EncodeSqrtRatioX96(big.NewInt(1), big.NewInt(1))
-	liquidity    = big.NewInt(1_000_000)
+	sqrtRatioX96 = utils.EncodeSqrtRatioX96(int256.NewInt(1), int256.NewInt(1))
+	liquidity    = int256.NewInt(1_000_000)
 	tick, _      = utils.GetTickAtSqrtRatio(sqrtRatioX96)
 	ticks        = []entities.Tick{
 		{
@@ -45,14 +44,14 @@ var (
 		},
 		{
 			Index:          entities.NearestUsableTick(utils.MaxTick, constants.TickSpacings[feeAmount]),
-			LiquidityNet:   new(big.Int).Mul(liquidity, constants.NegativeOne),
+			LiquidityNet:   int256.New().Mul(liquidity, constants.NegativeOne),
 			LiquidityGross: liquidity,
 		},
 	}
 
 	p, _     = entities.NewTickListDataProvider(ticks, constants.TickSpacings[feeAmount])
 	makePool = func(token0, token1 *core.Token) *entities.Pool {
-		pool, _ := entities.NewPool(token0, token1, feeAmount, sqrtRatioX96, liquidity, big.NewInt(0), tick, p)
+		pool, _ := entities.NewPool(token0, token1, feeAmount, sqrtRatioX96, liquidity, int256.NewInt(0), tick, p)
 		return pool
 	}
 )

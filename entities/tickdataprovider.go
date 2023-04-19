@@ -1,11 +1,11 @@
 package entities
 
-import "math/big"
+import "github.com/linhbkhn95/int256"
 
 type Tick struct {
 	Index          int
-	LiquidityGross *big.Int
-	LiquidityNet   *big.Int
+	LiquidityGross *int256.Int
+	LiquidityNet   *int256.Int
 }
 
 // Provides information about ticks
